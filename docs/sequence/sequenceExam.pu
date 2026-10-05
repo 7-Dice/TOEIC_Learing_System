@@ -1,0 +1,31 @@
+@startuml
+title シーケンス図: 模試モードの実行と結果保存
+
+actor ユーザー as User
+participant "画面 (UI)" as UI
+participant "MockExamService" as Service
+participant "QuestionDAO" as QDAO
+participant "MockExamDAO" as MDAO
+database "MySQL" as DB
+
+User -> UI: 模試モード開始
+UI -> Service: startMockExam()
+Service -> QDAO: fetchMockQuestions()
+QDAO -> DB: SELECT Part5(30問), Part6(16問), Part7(54問) RANDOM
+DB --> QDAO: 100問のリスト
+QDAO --> Service: 100問セット
+Service --> UI: 模試問題画面 & 75分タイマー起動
+
+note over UI, User: ユーザーが100問の回答を進める
+
+User -> UI: 「提出」ボタン押下 (または 75分経過)
+UI -> Service: finishMockExam(userAnswersMap)
+Service -> Service: 100問の採点・正解数/不正解数/未回答数を集計
+
+Service -> MDAO: saveMockResult(MockExamResult)
+MDAO -> DB: INSERT INTO mock_exam_results
+DB --> MDAO: OK
+
+Service --> UI: 集計結果オブジェクト
+UI --> User: 模試結果サマリー表示 (得点・各Part正解率)
+@enduml

@@ -1,0 +1,99 @@
+@startuml
+title TOEIC Reading 学習システム クラス図
+
+package "Model / Entity" {
+  class Passage {
+    - long passageId
+    - int partType
+    - String passageBody
+    + getters/setters()
+  }
+
+  class Question {
+    - long questionId
+    - Long passageId
+    - int partType
+    - String questionText
+    - String optionA
+    - String optionB
+    - String optionC
+    - String optionD
+    - char correctAnswer
+    - String explanation
+    + getters/setters()
+  }
+
+  class LearningHistory {
+    - long historyId
+    - long questionId
+    - char userAnswer
+    - boolean isCorrect
+    - Timestamp answeredAt
+    - Integer answerTimeSeconds
+    + getters/setters()
+  }
+
+  class MockExamResult {
+    - long mockId
+    - Timestamp startTime
+    - Timestamp endTime
+    - int totalQuestions
+    - int answeredCount
+    - int correctCount
+    - int incorrectCount
+    - int unansweredCount
+    + getters/setters()
+  }
+}
+
+package "DAO (Data Access Object)" {
+  class QuestionDAO {
+    + Question fetchNextPracticeQuestion()
+    + Passage fetchPassageById(long passageId)
+    + List<Question> fetchMockQuestions()
+  }
+
+  class LearningHistoryDAO {
+    + void saveHistory(LearningHistory history)
+    + int getQuestionStatus(long questionId)
+  }
+
+  class MockExamDAO {
+    + void saveMockResult(MockExamResult result)
+  }
+}
+
+package "Service / Logic" {
+  class PracticeService {
+    + Question getNextQuestion()
+    + boolean answerQuestion(long questionId, char answer, int timeSec)
+  }
+
+  class MockExamService {
+    + void startMockExam()
+    + List<Question> getMockQuestions()
+    + MockExamResult finishMockExam(Map<Long, Character> userAnswers)
+  }
+
+  class CsvExportService {
+    + void exportPracticeHistoryToCsv(String filePath)
+    + void exportMockResultsToCsv(String filePath)
+  }
+}
+
+package "Database" {
+  class DBUtil {
+    + {static} Connection getConnection()
+  }
+}
+
+PracticeService --> QuestionDAO
+PracticeService --> LearningHistoryDAO
+MockExamService --> QuestionDAO
+MockExamService --> MockExamDAO
+QuestionDAO --> DBUtil
+LearningHistoryDAO --> DBUtil
+MockExamDAO --> DBUtil
+
+Question "0..*" -- "0..1" Passage : belongs to
+@enduml

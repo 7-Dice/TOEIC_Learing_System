@@ -1,0 +1,33 @@
+@startuml
+title シーケンス図: 練習モードの一問解答処理
+
+actor ユーザー as User
+participant "画面 (UI)" as UI
+participant "PracticeService" as Service
+participant "QuestionDAO" as QDAO
+participant "LearningHistoryDAO" as HDAO
+database "MySQL" as DB
+
+User -> UI: 練習開始を要求
+UI -> Service: getNextQuestion()
+Service -> QDAO: fetchNextPracticeQuestion()
+QDAO -> DB: SELECT (誤答優先 2 -> 未回答 0 / 1)
+DB --> QDAO: 設問データ取得
+QDAO --> Service: Questionオブジェクト
+Service --> UI: 設問・選択肢表示
+
+User -> UI: 回答(例: 'A')を選択して送信
+UI -> Service: answerQuestion(questionId, 'A', timeSec)
+Service -> Service: 正誤判定 (correctAnswer == 'A')
+
+Service -> HDAO: saveHistory(LearningHistory)
+HDAO -> DB: INSERT INTO learning_history
+DB --> HDAO: OK
+
+Service -> HDAO: 優先度ステータス更新
+HDAO -> DB: UPDATE (正解時: 優先度下げ / 誤答時: 優先度 2 維持)
+DB --> HDAO: OK
+
+Service --> UI: 判定結果 (TRUE/FALSE) & 解説データ
+UI --> User: 結果画面表示（正誤・解説）
+@enduml

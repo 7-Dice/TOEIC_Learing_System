@@ -1,0 +1,32 @@
+@startuml
+title DFD Level 1 (データフロー図)
+
+' 外部アクター
+actor "学習者\n(ユーザー)" as User
+
+' プロセス (システム処理)
+usecase "1.0 出題処理\n(練習/模試)" as P1
+usecase "2.0 正誤判定・履歴更新処理" as P2
+usecase "3.0 結果集計・出力処理" as P3
+
+' データストア
+database "D1: 問題DB\n(questions / passages)" as D1
+database "D2: 練習履歴DB\n(learning_history)" as D2
+database "D3: 模試結果DB\n(mock_exam_results)" as D3
+
+' データフロー
+D1 --> P1 : 設問・親文章データ抽出
+User --> P1 : モード選択 / 回答入力
+P1 --> P2 : 回答データ (設問ID, 選択肢, 回答時間)
+
+P2 --> D2 : 【練習モード】解答ログ・正誤・優先度更新
+P2 --> D3 : 【模試モード】100問集計結果の保存
+
+D2 --> P1 : 過去の誤答ステータス (優先出題判定用)
+
+P2 --> User : 判定結果・解説表示
+P3 --> User : CSVファイル / 結果サマリー出力
+D2 ..> P3 : 練習履歴参照
+D3 ..> P3 : 模試結果参照
+
+@enduml
