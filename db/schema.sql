@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS learning_history (
     history_id BIGINT PRIMARY KEY AUTO_INCREMENT,
     question_id BIGINT NOT NULL,
     user_answer CHAR(1) NOT NULL,
-    is_correct BOOLEAN NOT NULL,
+    is_correct BOOLEAN DEFAULT NULL, -- true,false,NULLで正誤と未回答判定
     answered_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     answer_time_seconds INT,
     FOREIGN KEY (question_id) REFERENCES questions(question_id)
